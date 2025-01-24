@@ -21,8 +21,7 @@ namespace ctranslate2 {
                          bool self_attention,
                          bool pre_norm = true,
                          bool is_decoder = false,
-                         Alibi* alibi = nullptr,
-                         bool is_flash_attn = false);
+                         Alibi* alibi = nullptr);
       virtual ~AttentionLayer() {};
       DataType output_type() const override;
       dim_t output_size() const override;

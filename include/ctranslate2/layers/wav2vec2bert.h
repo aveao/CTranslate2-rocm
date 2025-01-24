@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ctranslate2/layers/attention.h"
-#include "ctranslate2/layers/flash_attention.h"
 #include "ctranslate2/layers/common.h"
 #include "ctranslate2/layers/transformer.h"
 #include "ctranslate2/padder.h"
@@ -14,8 +13,7 @@ namespace ctranslate2 {
       EncoderLayer(const models::Model& model,
                    const std::string& scope,
                    const bool pre_norm = true,
-                   const ops::ActivationType activation_type = ops::ActivationType::ReLU,
-                   const bool use_flash_attention = false);
+                   const ops::ActivationType activation_type = ops::ActivationType::ReLU);
 
       void operator()(const StorageView& input, StorageView& output) const;
 
@@ -55,8 +53,7 @@ namespace ctranslate2 {
       AdapterLayer(const models::Model& model,
                    const std::string& scope,
                    const bool pre_norm = true,
-                   const ops::ActivationType activation_type = ops::ActivationType::ReLU,
-                   const bool use_flash_attention = false);
+                   const ops::ActivationType activation_type = ops::ActivationType::ReLU);
 
       void operator()(const StorageView& input, StorageView& output) const;
 

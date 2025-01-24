@@ -6,17 +6,12 @@ namespace ctranslate2 {
     EncoderLayer::EncoderLayer(const models::Model& model,
                                const std::string& scope,
                                const bool pre_norm,
-                               const ops::ActivationType activation_type,
-                               const bool use_flash_attention)
+                               const ops::ActivationType activation_type)
       : _ffn1_layer_norm(model, scope + "/enc_ffn1_layer_norm")
       , _ff1(model, scope + "/enc_ffn1", pre_norm, activation_type)
       , _self_attn_layer_norm(model, scope + "/enc_attn_layer_norm")
       , _num_heads(model.get_attribute_with_default<int32_t>(scope + "/num_heads", 16))
-      , _self_attention(!use_flash_attention ? std::unique_ptr<AttentionLayer>(new MultiHeadAttention(model,
-                        scope + "/enc_attn",
-                        _num_heads,
-                        /*self_attention=*/true,
-                        pre_norm)) : std::unique_ptr<AttentionLayer>(new FlashMultiHeadAttention(model,
+      , _self_attention(std::unique_ptr<AttentionLayer>(new MultiHeadAttention(model,
                         scope + "/enc_attn",
                         _num_heads,
                         /*self_attention=*/true,
@@ -98,19 +93,14 @@ namespace ctranslate2 {
     AdapterLayer::AdapterLayer(const models::Model& model,
                                const std::string& scope,
                                const bool pre_norm,
-                               const ops::ActivationType activation_type,
-                               const bool use_flash_attention)
+                               const ops::ActivationType activation_type)
       : _residual_layer_norm(model, scope + "/adpt_residual_layer_norm")
       , _transpose({0, 2, 1})
       , _residual_conv(model, scope + "/adpt_residual_conv", /*stride=*/2, /*padding=*/1)
       , _attn_layer_norm(model, scope + "/adpt_attn_layer_norm")
       , _attn_conv(model, scope + "/adpt_attn_conv", /*stride=*/2, /*padding=*/1)
       , _num_heads(model.get_attribute_with_default<int32_t>(scope + "/num_heads", 16))
-      , _self_attention(!use_flash_attention ? std::unique_ptr<AttentionLayer>(new MultiHeadAttention(model,
-                        scope + "/adpt_attn_layer",
-                        _num_heads,
-                        /*self_attention=*/true,
-                        pre_norm)) : std::unique_ptr<AttentionLayer>(new FlashMultiHeadAttention(model,
+      , _self_attention(std::unique_ptr<AttentionLayer>(new MultiHeadAttention(model,
                         scope + "/adpt_attn_layer",
                         _num_heads,
                         /*self_attention=*/true,
@@ -169,13 +159,11 @@ namespace ctranslate2 {
       , _encoder_layers(build_layers_list<const EncoderLayer>(model,
                                                               scope + "/encoder_layers",
                                                               /*pre_norm=*/true,
-                                                              ops::ActivationType::Swish,
-                                                              /*use_flash_attention=*/false))
+                                                              ops::ActivationType::Swish))
       , _adapt_layers(build_layers_list<const AdapterLayer>(model,
                                                             scope + "/adapter_layers",
                                                             /*pre_norm=*/true,
-                                                            ops::ActivationType::ReLU,
-                                                            /*use_flash_attention=*/false))
+                                                            ops::ActivationType::ReLU))
       , _lm_head(model, scope + "/lm_head", nullptr, true) {
     }
 

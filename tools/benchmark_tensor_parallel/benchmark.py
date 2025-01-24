@@ -149,7 +149,7 @@ def main():
 
     print("Loading the model...")
     generator = ctranslate2.Generator(args.model_path, device="cuda", tensor_parallel=True,
-                                      flash_attention=False, inter_threads=2)
+                                      inter_threads=2)
     sp = spm.SentencePieceProcessor(os.path.join(args.model_path, "tokenizer.model"))
 
     if not os.path.exists(args.src):
