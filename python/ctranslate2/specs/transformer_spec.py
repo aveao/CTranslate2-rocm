@@ -152,7 +152,7 @@ class TransformerDecoderSpec(model_spec.LayerSpec):
           multi_query_attention: Use multi-query attention (alias for num_heads_kv=1).
           num_heads_kv: Number of attention heads for the key and value.
           sliding_window: Max sequence length to retain in KV Cache.
-          quant_type: quantization type used (like awq... for lower bit quantization)
+          quant_type: quantization type used
           quant_group_size: group size of the lower bit quantization
           quant_bits: number of bit of the quantization (ex: 4bit)
         """
@@ -595,7 +595,7 @@ class TransformerDecoderModelSpec(model_spec.LanguageModelSpec):
           num_heads_kv: Number of attention heads for the key and value.
           head_dim: Number of head
           sliding_window: max sequence length to retain KV cache
-          quant_type: quantization type used (like awq... for lower bit quantization)
+          quant_type: quantization type used
           quant_group_size: group size of the lower bit quantization
           quant_bits: number of bit of the quantization (ex: 4bit)
         """
