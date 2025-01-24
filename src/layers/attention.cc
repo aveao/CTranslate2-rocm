@@ -300,7 +300,7 @@ namespace ctranslate2 {
                                            bool pre_norm,
                                            bool is_decoder,
                                            Alibi* alibi)
-      : AttentionLayer(model, scope, num_heads, self_attention, pre_norm, is_decoder, alibi, false)
+      : AttentionLayer(model, scope, num_heads, self_attention, pre_norm, is_decoder, alibi)
       , _relative_attention_bias(model.get_variable_if_exists(scope + "/relative_attention_bias"))
       , _relative_position_keys(model.get_variable_if_exists(scope + "/relative_position_keys"))
       , _relative_asymmetric_position_keys(model.get_variable_if_exists(scope + "/relative_asymmetric_position_keys"))
