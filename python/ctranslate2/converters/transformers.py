@@ -47,8 +47,6 @@ _SUPPORTED_ROPE_SCALING = {
 }
 
 _SUPPORTED_QUANTIZATION = {
-    "gemm": common_spec.Quantization.AWQ_GEMM,
-    "gemv": common_spec.Quantization.AWQ_GEMV,
 }
 
 _MODEL_LOADERS = {}
@@ -1692,8 +1690,6 @@ class LlamaLoader(ModelLoader):
         quantization_config = getattr(model.config, "quantization_config", None)
         if quantization_config:
             quant_type = None
-            if quantization_config.quant_method == "awq":
-                quant_type = _SUPPORTED_QUANTIZATION.get(quantization_config.version)
             if quant_type is None:
                 raise NotImplementedError(
                     "Quantization type '%s' is not yet implemented. "
@@ -1794,7 +1790,7 @@ class LlamaLoader(ModelLoader):
             if quant_type == common_spec.Quantization.CT2:
                 utils.fuse_linear(layer_spec.self_attention.linear[0], split_layers)
             else:
-                cc_dim = 1 if quant_type == common_spec.Quantization.AWQ_GEMM else 0
+                cc_dim = 0
                 utils.fuse_linear_prequant(
                     layer_spec.self_attention.linear[0], split_layers, cc_dim
                 )
@@ -1852,8 +1848,6 @@ class MistralLoader(ModelLoader):
 
         quantization_config = getattr(model.config, "quantization_config", None)
         if quantization_config:
-            if quantization_config.quant_method == "awq":
-                quant_type = _SUPPORTED_QUANTIZATION.get(quantization_config.version)
             if quant_type is None:
                 raise NotImplementedError(
                     "Quantization type '%s' is not yet implemented. "
@@ -1941,7 +1935,7 @@ class MistralLoader(ModelLoader):
             if quant_type == common_spec.Quantization.CT2:
                 utils.fuse_linear(layer_spec.self_attention.linear[0], split_layers)
             else:
-                cc_dim = 1 if quant_type == common_spec.Quantization.AWQ_GEMM else 0
+                cc_dim = 0
                 utils.fuse_linear_prequant(
                     layer_spec.self_attention.linear[0], split_layers, cc_dim
                 )
