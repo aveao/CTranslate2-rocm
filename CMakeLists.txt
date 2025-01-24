@@ -21,7 +21,6 @@ option(BUILD_CLI "Compile the clients" ON)
 option(BUILD_TESTS "Compile the tests" OFF)
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 option(WITH_TENSOR_PARALLEL "Compile with NCCL and MPI backend" OFF)
-option(WITH_FLASH_ATTN "Compile with Flash Attention 2" OFF)
 
 if(ENABLE_PROFILING)
   message(STATUS "Enable profiling support")
@@ -125,7 +124,6 @@ set(SOURCES
   src/generator.cc
   src/layers/attention_layer.cc
   src/layers/attention.cc
-  src/layers/flash_attention.cc
   src/layers/common.cc
   src/layers/decoder.cc
   src/layers/transformer.cc
@@ -155,8 +153,6 @@ set(SOURCES
   src/ops/cos.cc
   src/ops/dequantize.cc
   src/ops/dequantize_cpu.cc
-  src/ops/flash_attention.cc
-  src/ops/flash_attention_cpu.cc
   src/ops/gather.cc
   src/ops/gather_cpu.cc
   src/ops/gelu.cc
@@ -492,12 +488,6 @@ if (WITH_CUDA)
   list(APPEND CUDA_NVCC_FLAGS ${ARCH_FLAGS})
   set(CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
 
-  # flags for flash attention
-  if (WITH_FLASH_ATTN)
-    list(APPEND CUDA_NVCC_FLAGS "--expt-relaxed-constexpr")
-    list(APPEND CUDA_NVCC_FLAGS "--expt-extended-lambda")
-  endif()
-
   message(STATUS "NVCC host compiler: ${CUDA_HOST_COMPILER}")
   message(STATUS "NVCC compilation flags: ${CUDA_NVCC_FLAGS}")
 
@@ -554,78 +544,6 @@ if (WITH_CUDA)
   else()
     list(APPEND LIBRARIES ${CUDA_CUBLAS_LIBRARIES})
   endif()
-  if (WITH_FLASH_ATTN)
-    add_definitions(-DCT2_WITH_FLASH_ATTN)
-    list(APPEND SOURCES
-      src/ops/flash-attention/flash_fwd_hdim32_bf16_sm80.cu
-      src/ops/flash-attention/flash_fwd_hdim32_fp16_sm80.cu
-      src/ops/flash-attention/flash_fwd_hdim64_bf16_sm80.cu
-      src/ops/flash-attention/flash_fwd_hdim64_fp16_sm80.cu
-      src/ops/flash-attention/flash_fwd_hdim96_bf16_sm80.cu
-      src/ops/flash-attention/flash_fwd_hdim96_fp16_sm80.cu
-      src/ops/flash-attention/flash_fwd_hdim128_bf16_sm80.cu
-      src/ops/flash-attention/flash_fwd_hdim128_fp16_sm80.cu
-      src/ops/flash-attention/flash_fwd_hdim160_bf16_sm80.cu
-      src/ops/flash-attention/flash_fwd_hdim160_fp16_sm80.cu
-      src/ops/flash-attention/flash_fwd_hdim192_bf16_sm80.cu
-      src/ops/flash-attention/flash_fwd_hdim192_fp16_sm80.cu
-      src/ops/flash-attention/flash_fwd_hdim224_bf16_sm80.cu
-      src/ops/flash-attention/flash_fwd_hdim224_fp16_sm80.cu
-      src/ops/flash-attention/flash_fwd_hdim256_bf16_sm80.cu
-      src/ops/flash-attention/flash_fwd_hdim256_fp16_sm80.cu
-      src/ops/flash-attention/flash_fwd_split_hdim32_bf16_sm80.cu
-      src/ops/flash-attention/flash_fwd_split_hdim32_fp16_sm80.cu
-      src/ops/flash-attention/flash_fwd_split_hdim64_bf16_sm80.cu
-      src/ops/flash-attention/flash_fwd_split_hdim64_fp16_sm80.cu
-      src/ops/flash-attention/flash_fwd_split_hdim96_bf16_sm80.cu
-      src/ops/flash-attention/flash_fwd_split_hdim96_fp16_sm80.cu
-      src/ops/flash-attention/flash_fwd_split_hdim128_bf16_sm80.cu
-      src/ops/flash-attention/flash_fwd_split_hdim128_fp16_sm80.cu
-      src/ops/flash-attention/flash_fwd_split_hdim160_bf16_sm80.cu
-      src/ops/flash-attention/flash_fwd_split_hdim160_fp16_sm80.cu
-      src/ops/flash-attention/flash_fwd_split_hdim192_bf16_sm80.cu
-      src/ops/flash-attention/flash_fwd_split_hdim192_fp16_sm80.cu
-      src/ops/flash-attention/flash_fwd_split_hdim224_bf16_sm80.cu
-      src/ops/flash-attention/flash_fwd_split_hdim224_fp16_sm80.cu
-      src/ops/flash-attention/flash_fwd_split_hdim256_bf16_sm80.cu
-      src/ops/flash-attention/flash_fwd_split_hdim256_fp16_sm80.cu
-    )
-
-    set_source_files_properties(
-      src/ops/flash-attention/flash_fwd_hdim32_bf16_sm80.cu
-      src/ops/flash-attention/flash_fwd_hdim32_fp16_sm80.cu
-      src/ops/flash-attention/flash_fwd_hdim64_bf16_sm80.cu
-      src/ops/flash-attention/flash_fwd_hdim64_fp16_sm80.cu
-      src/ops/flash-attention/flash_fwd_hdim96_bf16_sm80.cu
-      src/ops/flash-attention/flash_fwd_hdim96_fp16_sm80.cu
-      src/ops/flash-attention/flash_fwd_hdim128_bf16_sm80.cu
-      src/ops/flash-attention/flash_fwd_hdim128_fp16_sm80.cu
-      src/ops/flash-attention/flash_fwd_hdim160_bf16_sm80.cu
-      src/ops/flash-attention/flash_fwd_hdim160_fp16_sm80.cu
-      src/ops/flash-attention/flash_fwd_hdim192_bf16_sm80.cu
-      src/ops/flash-attention/flash_fwd_hdim192_fp16_sm80.cu
-      src/ops/flash-attention/flash_fwd_hdim224_bf16_sm80.cu
-      src/ops/flash-attention/flash_fwd_hdim224_fp16_sm80.cu
-      src/ops/flash-attention/flash_fwd_hdim256_bf16_sm80.cu
-      src/ops/flash-attention/flash_fwd_hdim256_fp16_sm80.cu
-      src/ops/flash-attention/flash_fwd_split_hdim32_bf16_sm80.cu
-      src/ops/flash-attention/flash_fwd_split_hdim32_fp16_sm80.cu
-      src/ops/flash-attention/flash_fwd_split_hdim64_bf16_sm80.cu
-      src/ops/flash-attention/flash_fwd_split_hdim64_fp16_sm80.cu
-      src/ops/flash-attention/flash_fwd_split_hdim96_bf16_sm80.cu
-      src/ops/flash-attention/flash_fwd_split_hdim96_fp16_sm80.cu
-      src/ops/flash-attention/flash_fwd_split_hdim128_bf16_sm80.cu
-      src/ops/flash-attention/flash_fwd_split_hdim128_fp16_sm80.cu
-      src/ops/flash-attention/flash_fwd_split_hdim160_bf16_sm80.cu
-      src/ops/flash-attention/flash_fwd_split_hdim160_fp16_sm80.cu
-      src/ops/flash-attention/flash_fwd_split_hdim192_bf16_sm80.cu
-      src/ops/flash-attention/flash_fwd_split_hdim192_fp16_sm80.cu
-      src/ops/flash-attention/flash_fwd_split_hdim224_bf16_sm80.cu
-      src/ops/flash-attention/flash_fwd_split_hdim224_fp16_sm80.cu
-      src/ops/flash-attention/flash_fwd_split_hdim256_bf16_sm80.cu
-      src/ops/flash-attention/flash_fwd_split_hdim256_fp16_sm80.cu
-      PROPERTIES COMPILE_FLAGS "--use_fast_math")
-  endif()
   set(CUDA_LINK_LIBRARIES_KEYWORD PRIVATE)
   cuda_add_library(${PROJECT_NAME}
     ${SOURCES}
@@ -638,7 +556,6 @@ if (WITH_CUDA)
     src/ops/concat_split_slide_gpu.cu
     src/ops/conv1d_gpu.cu
     src/ops/dequantize_gpu.cu
-    src/ops/flash_attention_gpu.cu
     src/ops/gather_gpu.cu
     src/ops/gumbel_max_gpu.cu
     src/ops/layer_norm_gpu.cu
@@ -656,7 +573,6 @@ if (WITH_CUDA)
     src/ops/awq/gemv_gpu.cu
     src/ops/awq/dequantize_gpu.cu
   )
-
 
 elseif(WITH_CUDNN)
   message(FATAL_ERROR "WITH_CUDNN=ON requires WITH_CUDA=ON")

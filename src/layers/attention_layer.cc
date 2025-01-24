@@ -115,8 +115,7 @@ namespace ctranslate2 {
                                            bool self_attention,
                                            bool pre_norm,
                                            bool is_decoder,
-                                           Alibi* alibi,
-                                           bool is_flash_attn)
+                                           Alibi* alibi)
       : _tensor_parallel(model.tensor_parallel())
       , _num_heads(_tensor_parallel ? SAFE_DIVIDE(num_heads, ScopedMPISetter::getNRanks()) : num_heads)
       , _self_attention(self_attention)
@@ -126,7 +125,7 @@ namespace ctranslate2 {
       , _d_head(model.get_attribute_with_default<int32_t >(scope + "/head_dim", _d_model / _num_heads))
       , _pre_norm(pre_norm)
       , _layer_norm(build_optional_layer<LayerNorm>(model, scope + "/layer_norm"))
-      , _rotary_embeddings(make_rotary_embeddings(model, scope, !is_flash_attn))
+      , _rotary_embeddings(make_rotary_embeddings(model, scope, true))
       , _alibi(alibi)
       , _queries_scale(model.get_attribute_with_default<float>(
                          scope + "/queries_scale",
