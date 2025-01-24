@@ -750,10 +750,6 @@ namespace ctranslate2 {
         case QUANTIZATION_TYPE::CT2:
           model->set_compute_type(compute_type, device, device_index);
           break;
-        case QUANTIZATION_TYPE::AWQ_GEMM:
-        case QUANTIZATION_TYPE::AWQ_GEMV:
-          model->set_compute_type(ComputeType::FLOAT16, device, device_index, false);
-          break;
         default:
           throw std::invalid_argument("Quantization type is not supported");
           break;

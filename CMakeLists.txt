@@ -192,13 +192,6 @@ set(SOURCES
   src/ops/transpose.cc
   src/ops/nccl_ops.cc
   src/ops/nccl_ops_cpu.cc
-  src/ops/awq/dequantize.cc
-  src/ops/awq/dequantize_cpu.cc
-  src/ops/awq/gemm.cc
-  src/ops/awq/gemm_cpu.cc
-  src/ops/awq/gemv.cc
-  src/ops/awq/gemv_cpu.cc
-  src/ops/sum.cc
   src/padder.cc
   src/profiler.cc
   src/random.cc
@@ -566,9 +559,6 @@ if (WITH_CUDA)
     src/ops/topp_mask_gpu.cu
     src/ops/quantize_gpu.cu
     src/ops/nccl_ops_gpu.cu
-    src/ops/awq/gemm_gpu.cu
-    src/ops/awq/gemv_gpu.cu
-    src/ops/awq/dequantize_gpu.cu
   )
 
 elseif(WITH_CUDNN)

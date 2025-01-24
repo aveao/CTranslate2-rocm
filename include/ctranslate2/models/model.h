@@ -12,9 +12,7 @@ namespace ctranslate2 {
   namespace models {
 
     enum class QUANTIZATION_TYPE {
-      CT2,
-      AWQ_GEMM,
-      AWQ_GEMV
+      CT2
     };
 
     static const size_t current_binary_version = 6;

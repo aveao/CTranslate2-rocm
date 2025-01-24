@@ -39,7 +39,3 @@
 #include "alibi_add.h"
 #include "slide.h"
 #include "nccl_ops.h"
-#include "awq/gemm.h"
-#include "awq/gemv.h"
-#include "awq/dequantize_awq.h"
-#include "sum.h"

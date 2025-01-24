@@ -28,8 +28,6 @@ class Quantization(enum.IntEnum):
     """Activation type."""
 
     CT2 = 0
-    AWQ_GEMM = 1
-    AWQ_GEMV = 2
 
 
 class LayerNormSpec(model_spec.LayerSpec):

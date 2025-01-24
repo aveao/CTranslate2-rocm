@@ -397,35 +397,9 @@ namespace ctranslate2 {
                        bias);
       } else if (_qzero && _qscale) {
         switch (_quant_method) {
-          case models::QUANTIZATION_TYPE::AWQ_GEMM:
-            if (input.dim(0) * input.dim(1) >= 1024) {
-              StorageView weight_dequant(input.dtype(), input.device());
-              ops::DequantizeAwq dequantize_awq_op;
-              dequantize_awq_op(*weight, *qscale, *_qzero, weight_dequant);
-              ops::Gemm gemm_op(/*alpha=*/1,
-                                /*beta=*/0,
-                                /*trans_a=*/false,
-                                /*trans_b=*/false,
-                                /*a_is_packed=*/false,
-                                /*b_is_packed*/false,
-                                _activation_type);
-              gemm_op(input, weight_dequant, output, nullptr, bias);
-            } else {
-              ops::GemmAwq gemm_awq_op(/*alpha=*/1, /*beta=*/0, /*trans_a=*/false, /*trans_b=*/false,
-                /*a_is_packed=*/false, /*b_is_packed=*/false, _activation_type);
-              gemm_awq_op(input, *weight, *qscale, *_qzero, output, bias);
-            }
-            break;
-          case models::QUANTIZATION_TYPE::AWQ_GEMV:
-          {
-            ops::GemvAwq gemv_awq_op(/*alpha=*/1, /*beta=*/0, /*trans_a=*/false, /*trans_b=*/false,
-              /*a_is_packed=*/false, /*b_is_packed=*/false, _activation_type);
-            gemv_awq_op(input, *weight, *qscale, *_qzero, output, bias);
-            break;
-          }
           default:
             throw std::invalid_argument("Dense forward: invalid quantized type,"
-                                        "support only ct2 and awq quantization");
+                                        "support only ct2 quantization");
         }
       } else {
         _gemm_op(input, *weight, output, nullptr, bias);
