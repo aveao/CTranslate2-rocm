@@ -21,9 +21,8 @@ COPY CMakeLists.txt .
 ARG PYTORCH_ROCM_ARCH
 ENV PYTORCH_ROCM_ARCH=${PYTORCH_ROCM_ARCH:-"gfx1201"}
 
-# RUN CLANG_CMAKE_CXX_COMPILER=amdclang++ CXX=amdclang++ HIPCXX="$(hipconfig -l)/clang" HIP_PATH="$(hipconfig -R)" \
-#     cmake -S . -B build -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DWITH_MKL=OFF -DWITH_HIP=ON \
-#     -DCMAKE_HIP_ARCHITECTURES=$PYTORCH_ROCM_ARCH -DWITH_DNNL=OFF -DBUILD_TESTS=ON -DWITH_CUDNN=ON
+ENV CTRANSLATE2_ROOT=/opt/ctranslate2
+ENV LD_LIBRARY_PATH=/usr/local/lib/:${LD_LIBRARY_PATH}
 
 RUN mkdir build_tmp && \
     cd build_tmp && \
@@ -33,22 +32,16 @@ RUN mkdir build_tmp && \
           -DCMAKE_BUILD_TYPE=Release .. && \
     VERBOSE=1 make -j$(nproc) install
 
-ENV CTRANSLATE2_ROOT=/opt/ctranslate2
-ENV LD_LIBRARY_PATH=/usr/local/lib/:${LD_LIBRARY_PATH}
-
-# RUN cmake --build build -- -j
-# RUN cd build && cmake --install . --prefix $CTRANSLATE2_ROOT
-# RUN ldconfig
-
 ENV LANG=en_US.UTF-8
 COPY README.md .
+ENV PIP_BREAK_SYSTEM_PACKAGES=1
 
 RUN cd python && \
     python3 -m pip --no-cache-dir install -r install_requirements.txt && \
     python3 setup.py bdist_wheel --dist-dir $CTRANSLATE2_ROOT
-# RUN pip install $CTRANSLATE2_ROOT/*.whl
 
 FROM rocm/dev-ubuntu-24.04:7.1-complete
+# FROM rocm/pytorch:rocm7.1_ubuntu24.04_py3.12_pytorch_release_2.7.1
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -59,9 +52,8 @@ RUN apt-get update && \
 
 ENV CTRANSLATE2_ROOT=/opt/ctranslate2
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CTRANSLATE2_ROOT/lib
+ENV PIP_BREAK_SYSTEM_PACKAGES=1
 
 COPY --from=builder $CTRANSLATE2_ROOT $CTRANSLATE2_ROOT
 RUN python3 -m pip --no-cache-dir install $CTRANSLATE2_ROOT/*.whl && \
     rm $CTRANSLATE2_ROOT/*.whl
-
-ENTRYPOINT ["/opt/ctranslate2/bin/ct2-translator"]
