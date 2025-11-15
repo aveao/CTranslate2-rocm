@@ -22,6 +22,7 @@
 #define cublasGemmEx hipblasGemmEx
 #define cublasGemmStridedBatchedEx hipblasGemmStridedBatchedEx
 #else
+#define cublasGemmEx hipblasGemmEx_v2
 #define cublasGemmStridedBatchedEx hipblasGemmStridedBatchedEx_v2
 #endif
 #define CUDA_R_8I HIP_R_8I

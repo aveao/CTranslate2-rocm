@@ -1,4 +1,8 @@
-FROM rocm/dev-ubuntu-24.04:7.1-complete as builder
+ARG BUILDER_IMAGE="rocm/dev-ubuntu-24.04:6.4.4-complete"
+ARG RUNNER_IMAGE=${BUILDER_IMAGE}
+ARG ROCM_ARCH="gfx1201"
+
+FROM ${BUILDER_IMAGE} AS builder
 
 WORKDIR /root
 
@@ -18,8 +22,8 @@ COPY cmake cmake
 COPY python python
 COPY CMakeLists.txt .
 
-ARG PYTORCH_ROCM_ARCH
-ENV PYTORCH_ROCM_ARCH=${PYTORCH_ROCM_ARCH:-"gfx1201"}
+ENV ROCM_ARCH=${ROCM_ARCH}
+ENV GPU_TARGETS=${ROCM_ARCH}
 
 ENV CTRANSLATE2_ROOT=/opt/ctranslate2
 ENV LD_LIBRARY_PATH=/usr/local/lib/:${LD_LIBRARY_PATH}
@@ -28,7 +32,7 @@ RUN mkdir build_tmp && \
     cd build_tmp && \
     CLANG_CMAKE_CXX_COMPILER=amdclang++ CXX=amdclang++ HIPCXX="$(hipconfig -l)/clang" HIP_PATH="$(hipconfig -R)" \
     cmake -DCMAKE_INSTALL_PREFIX=${CTRANSLATE2_ROOT} -DCMAKE_POLICY_VERSION_MINIMUM=3.5  -DWITH_HIP=ON \
-          -DCMAKE_HIP_ARCHITECTURES=$PYTORCH_ROCM_ARCH -DWITH_MKL=OFF -DWITH_DNNL=OFF -DWITH_CUDNN=ON \
+          -DCMAKE_HIP_ARCHITECTURES=$ROCM_ARCH -DWITH_MKL=OFF -DWITH_DNNL=OFF -DWITH_CUDNN=ON \
           -DCMAKE_BUILD_TYPE=Release .. && \
     VERBOSE=1 make -j$(nproc) install
 
@@ -40,8 +44,7 @@ RUN cd python && \
     python3 -m pip --no-cache-dir install -r install_requirements.txt && \
     python3 setup.py bdist_wheel --dist-dir $CTRANSLATE2_ROOT
 
-FROM rocm/dev-ubuntu-24.04:7.1-complete
-# FROM rocm/pytorch:rocm7.1_ubuntu24.04_py3.12_pytorch_release_2.7.1
+FROM ${RUNNER_IMAGE} AS runner
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -53,6 +56,7 @@ RUN apt-get update && \
 ENV CTRANSLATE2_ROOT=/opt/ctranslate2
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CTRANSLATE2_ROOT/lib
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
+ENV PYTORCH_ROCM_ARCH=${ROCM_ARCH}
 
 COPY --from=builder $CTRANSLATE2_ROOT $CTRANSLATE2_ROOT
 RUN python3 -m pip --no-cache-dir install $CTRANSLATE2_ROOT/*.whl && \
