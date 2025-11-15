@@ -18,18 +18,23 @@
 #define CUBLAS_COMPUTE_32I HIPBLAS_COMPUTE_32I
 #define CUDA_R_32F HIP_R_32F
 #define CUDA_R_16BF HIP_R_16BF
-#define cublasGemmEx hipblasGemmEx_v2
+#ifdef HIPBLAS_V2
+#define cublasGemmEx hipblasGemmEx
+#define cublasGemmStridedBatchedEx hipblasGemmStridedBatchedEx
+#else
+#define cublasGemmStridedBatchedEx hipblasGemmStridedBatchedEx_v2
+#endif
 #define CUDA_R_8I HIP_R_8I
 #define CUDA_R_32I HIP_R_32I
 #define CUBLAS_GEMM_DEFAULT_TENSOR_OP HIPBLAS_GEMM_DEFAULT
 #define cublasSgemmStridedBatched hipblasSgemmStridedBatched
-#define cublasGemmStridedBatchedEx hipblasGemmStridedBatchedEx_v2
 #else
 #include <cuda_runtime.h>
 #include <cublas_v2.h>
 #endif
 
 #include <thrust/device_ptr.h>
+#include <thrust/extrema.h>
 #include "cuda/helpers.h"
 #include "type_dispatch.h"
 

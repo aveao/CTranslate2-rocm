@@ -6,6 +6,7 @@
 #ifdef CT2_USE_HIP
 #include <hip/hip_fp16.h>
 #include <hip/hip_bf16.h>
+#include <thrust/iterator/counting_iterator.h>
 #include <hip/hip_runtime.h>
 
 #define __nv_bfloat16 __hip_bfloat16
