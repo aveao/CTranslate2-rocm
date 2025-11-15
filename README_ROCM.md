@@ -60,7 +60,7 @@ pip install dist/*.whl
 
 ### faster-whisper
 
-fasterwhisper 1.2.1, ctranslate 4.6.1, whisper-3-large-turbo, ROCm 6.4.4
+faster-whisper 1.2.1, ctranslate 4.6.1, whisper-3-large-turbo, ROCm 6.4.4
 
 GPU running in docker, CPU running on system.
 
@@ -68,19 +68,19 @@ Audio Duration: 734.16s (mp3). Noisy over-the-air recording of a ham radio commu
 
 **language unset (de), no batching, beam_size=5:**
 
-Radeon RX 9070 XT (FP16): 26.966s
-Ryzen 7 9700X (performance): 85.753s
-Ryzen 7 9700X (power save): 96.006s
+- Radeon RX 9070 XT (FP16): 26.966s
+- Ryzen 7 9700X (performance): 85.753s
+- Ryzen 7 9700X (power save): 96.006s
 
 **language unset (de), batch_size=16:**
 
-Radeon RX 9070 XT (FP16): 19.109s
-Ryzen 7 9700X (performance): 48.371s
+- Radeon RX 9070 XT (FP16): 19.109s
+- Ryzen 7 9700X (performance): 48.371s
 
 **language set (de), batch_size=16:**
 
-Radeon RX 9070 XT (FP16): 18.380s
-Ryzen 7 9700X (performance): 46.560s
+- Radeon RX 9070 XT (FP16): 18.380s
+- Ryzen 7 9700X (performance): 46.560s
 
 ## Running tests / debugging issues
 
