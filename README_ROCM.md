@@ -64,7 +64,7 @@ faster-whisper 1.2.1, ctranslate 4.6.1, whisper-3-large-turbo, ROCm 6.4.4
 
 GPU running in docker, CPU running on system.
 
-Audio Duration: 734.16s (mp3). Noisy over-the-air recording of a ham radio communication.
+Audio Duration: 734.16s (mp3). Noisy over-the-air recording of a ham radio communication (few points without speech). No VAD applied.
 
 **language unset (de), no batching, beam_size=5:**
 
