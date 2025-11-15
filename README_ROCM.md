@@ -31,7 +31,7 @@ ROCm 7 isn't working right now, haven't yet figured out why.
 
 You can play around with it with this command if you want:
 
-`docker build --file docker/Dockerfile-rocm --tag ctranslate2:4.6.1-rocm7-pytorch --build-arg ROCM_ARCH=SET_ME --build-arg BUILDER_IMAGE="rocm/dev-ubuntu-24.04:7.1-complete" .`
+`docker build --file docker/Dockerfile-rocm --tag ctranslate2:4.6.1-rocm7 --build-arg ROCM_ARCH=SET_ME --build-arg BUILDER_IMAGE="rocm/dev-ubuntu-24.04:7.1-complete" .`
 
 ### Manual setup
 
