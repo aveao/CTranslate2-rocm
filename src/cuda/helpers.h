@@ -424,7 +424,14 @@ namespace ctranslate2 {
     // They help define row-wise reduction where each block handles a single row.
 
 #ifdef CT2_USE_HIP
-  #define C10_WARP_SIZE warpSize
+  // It'd be best fetch this during runtime but for simplicity, this compile-time recommendation by AMD is used for now
+  // https://rocm.docs.amd.com/en/latest/about/release-notes.html#amdgpu-wavefront-size-compiler-macro-deprecation
+  // https://rocm.docs.amd.com/projects/HIP/en/docs-7.1.0/how-to/hip_cpp_language_extensions.html#warpsize
+  #if defined(__GFX8__) || defined(__GFX9__)
+    #define C10_WARP_SIZE 64
+  #else
+    #define C10_WARP_SIZE 32
+  #endif
 #else
   #define C10_WARP_SIZE 32
 #endif
