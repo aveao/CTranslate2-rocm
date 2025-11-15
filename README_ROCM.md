@@ -5,36 +5,86 @@
 [Upstream README](README.md) | **ROCm Install Guide**
 </div>
 
+This is a fork of https://github.com/arlo-phoenix/CTranslate2-rocm with:
+- changes from https://github.com/mmis1000/CTranslate2-rocm/tree/rocm-windows-pr applied for ROCm 7 support (-> though ROCm 7 isn't working perfectly at the moment)
+- changes from https://github.com/justinkb/CTranslate2-rocm/tree/4.6.0-rocm applied to go up to CTranslate2 4.6.0, alongside further fixes from that repo
+
+That was then rebased onto CTranslate2 4.6.1, with some improvements/fixes on build instructions by me (@aveao). This is my first rodeo with ROCm, don't expect me to have done anything "right".
+
 ## Install Guide
 
-These install instructions are for https://hub.docker.com/r/rocm/pytorch. They should mostly work for system installs as well, but then you'll have to change install directories and make sure all dependencies are installed (in the image they are already present in the conda env)
+### Directly with docker
 
-after following the guide in https://hub.docker.com/r/rocm/pytorch (tested for latest 9e1748e5b (**ROCm 6.2**))
+`docker build --file docker/Dockerfile-rocm --tag ctranslate2:4.6.1-rocm6 --build-arg ROCM_ARCH=SET_ME .`
+
+If you want pytorch also:
+
+`docker build --file docker/Dockerfile-rocm --tag ctranslate2:4.6.1-rocm6-pytorch --build-arg ROCM_ARCH=SET_ME --build-arg RUNNER_IMAGE="rocm/pytorch:rocm6.4.4_ubuntu24.04_py3.12_pytorch_release_2.7.1" .`
+
+Value for `ROCM_ARCH` can be found through `rocminfo | grep gfx`.
+
+When running, pay attention to https://rocm.docs.amd.com/projects/install-on-linux/en/latest/how-to/docker.html
+
+#### ROCm 7
+
+ROCm 7 isn't working right now, haven't yet figured out why.
+
+You can play around with it with this command if you want:
+
+`docker build --file docker/Dockerfile-rocm --tag ctranslate2:4.6.1-rocm7-pytorch --build-arg ROCM_ARCH=SET_ME --build-arg BUILDER_IMAGE="rocm/dev-ubuntu-24.04:7.1-complete" .`
+
+### Manual setup
+
+These install instructions are for https://hub.docker.com/r/rocm/dev-ubuntu-24.04 (tested for `:6.4.4-complete`). They should mostly work for system installs as well, but then you'll have to change install directories and make sure all dependencies are installed. This also installs things system-wide, you might want to change that if not in docker.
+
+After following the guide in https://hub.docker.com/r/rocm/pytorch for env setup, running inside the container:
 
 ```bash
-#init conda
-conda init
-bash
-conda activate py_3.9
-```
-
-```bash
-git clone https://github.com/arlo-phoenix/CTranslate2-rocm.git --recurse-submodules
+git clone https://github.com/aveao/CTranslate2-rocm.git --recurse-submodules
+apt update
+apt install cmake libomp-20-dev
 cd CTranslate2-rocm
-#export PYTORCH_ROCM_ARCH=gfx1030 #optionally set this only to your ROCm arch to speed up compiling. You can find it with rocminfo | grep gfx
-CLANG_CMAKE_CXX_COMPILER=clang++ CXX=clang++ HIPCXX="$(hipconfig -l)/clang" HIP_PATH="$(hipconfig -R)"     cmake -S . -B build -DWITH_MKL=OFF -DWITH_HIP=ON -DCMAKE_HIP_ARCHITECTURES=$PYTORCH_ROCM_ARCH -DBUILD_TESTS=ON -DWITH_CUDNN=ON
-cmake --build build -- -j16
+#export ROCM_ARCH=gfx1201 #optionally set this only to your ROCm arch to speed up compiling. You can find it with rocminfo | grep gfx
+CLANG_CMAKE_CXX_COMPILER=amdclang++ CXX=amdclang++ HIPCXX="$(hipconfig -l)/clang" HIP_PATH="$(hipconfig -R)" cmake -S . -B build -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DWITH_MKL=OFF -DWITH_HIP=ON -DCMAKE_HIP_ARCHITECTURES=$ROCM_ARCH -DWITH_DNNL=OFF -DBUILD_TESTS=ON -DWITH_CUDNN=ON
+cmake --build build -- -j
 cd build
-cmake --install . --prefix $CONDA_PREFIX #or just sudo make install if not using conda env
-sudo ldconfig
+make install
+ldconfig
 cd ../python
 pip install -r install_requirements.txt
 python setup.py bdist_wheel
 pip install dist/*.whl
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/
 ```
 
+## Benchmarks
+
+### faster-whisper
+
+fasterwhisper 1.2.1, ctranslate 4.6.1, whisper-3-large-turbo, ROCm 6.4.4
+
+GPU running in docker, CPU running on system.
+
+Audio Duration: 734.16s (mp3). Noisy over-the-air recording of a ham radio communication.
+
+**language unset (de), no batching, beam_size=5:**
+
+Radeon RX 9070 XT (FP16): 26.966s
+Ryzen 7 9700X (performance): 85.753s
+Ryzen 7 9700X (power save): 96.006s
+
+**language unset (de), batch_size=16:**
+
+Radeon RX 9070 XT (FP16): 19.109s
+Ryzen 7 9700X (performance): 48.371s
+
+**language set (de), batch_size=16:**
+
+Radeon RX 9070 XT (FP16): 18.380s
+Ryzen 7 9700X (performance): 46.560s
+
 ## Running tests / debugging issues
+
+(anything below is from the original forks, I haven't tested them)
 
 ### Tests
 
